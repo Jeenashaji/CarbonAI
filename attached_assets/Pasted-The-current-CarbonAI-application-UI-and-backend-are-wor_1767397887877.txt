@@ -1,0 +1,108 @@
+The current CarbonAI application UI and backend are working, but the system is using mock or placeholder data (e.g., current price = €0.00, fake accuracy, no latest sync timestamp). I want you to FIX this properly by integrating REAL historical EU ETS carbon market data and wiring the full data → model → API → UI pipeline.
+
+DO NOT generate fake values. REMOVE all hardcoded metrics.
+
+────────────────────────────────
+1. REAL DATA INTEGRATION (CRITICAL)
+────────────────────────────────
+Integrate real historical carbon price data for Germany / EU ETS.
+
+Use one or more of these FREE sources (prefer CSV over scraping):
+- EU ETS / EUA historical prices
+- European Energy Exchange (EEX) EUA futures data
+- Nasdaq Data Link (Quandl) EEX/EUA dataset
+
+Implement a `data_fetcher.py` module that:
+- Downloads the latest historical EUA prices
+- Saves raw data to `/data/raw/eua_prices.csv`
+- Logs number of rows loaded and latest available date
+- Fails loudly if data is empty
+
+────────────────────────────────
+2. DATA PREPROCESSING
+────────────────────────────────
+Create `preprocessing.py` that:
+- Loads raw EUA data
+- Converts date column to datetime index
+- Sorts data chronologically
+- Handles missing values
+- Generates time-series features (lags, rolling means)
+- Saves processed data to `/data/processed/eua_processed.csv`
+
+────────────────────────────────
+3. SARIMAX MODEL (NO PLACEHOLDERS)
+────────────────────────────────
+Update the SARIMAX implementation so that:
+- It trains ONLY on real processed data
+- Uses seasonal parameters (monthly seasonality)
+- Saves trained model to `/models/sarimax.pkl`
+- Computes real RMSE on a validation split
+- Logs model diagnostics
+
+NO hardcoded accuracy values allowed.
+
+────────────────────────────────
+4. SYNC DATA BUTTON (BACKEND FIX)
+────────────────────────────────
+Fix the `/sync-data` endpoint so that clicking “Sync Data”:
+1. Downloads real EU ETS data
+2. Runs preprocessing
+3. Retrains the SARIMAX model
+4. Updates last_sync timestamp
+5. Returns real metrics
+
+Return JSON like:
+{
+  "current_price": <latest EUA price>,
+  "rmse": <real RMSE>,
+  "trend": "Bullish/Bearish/Neutral",
+  "last_sync": "<UTC timestamp>"
+}
+
+────────────────────────────────
+5. DASHBOARD API (REAL VALUES)
+────────────────────────────────
+Fix dashboard endpoints so they:
+- Load the trained SARIMAX model
+- Pull the latest real price from processed data
+- Compute forecast trend from predictions
+- Never return 0.00 unless data is truly missing
+
+If data is missing, return a clear error message.
+
+────────────────────────────────
+6. LOGGING & DEBUGGING
+────────────────────────────────
+Add logging statements for:
+- Number of rows loaded
+- Latest price date
+- Model training completion
+- Sync success or failure
+
+This must work correctly on Replit free tier.
+
+────────────────────────────────
+7. PROJECT STRUCTURE (ENFORCE)
+────────────────────────────────
+/data
+  /raw
+  /processed
+/src
+  data_fetcher.py
+  preprocessing.py
+  train.py
+  predict.py
+/models
+app.py
+requirements.txt
+
+────────────────────────────────
+8. FINAL CHECK
+────────────────────────────────
+After the fix:
+- Current price must show real € value (≈70–100 range historically)
+- Latest Data must show last sync timestamp
+- Forecast chart must render real predictions
+- No mock values anywhere in the codebase
+
+Optimize for correctness over UI changes.

@@ -1,0 +1,127 @@
+The current CarbonAI application UI and backend are functional, but the system is incorrectly using mock or placeholder data (e.g., current price = €0.00, fake accuracy values, missing latest sync timestamp). I want you to FIX this PROPERLY by integrating REAL historical EU ETS carbon market data and wiring the complete data → model → API → UI pipeline.
+
+DO NOT generate fake values.
+REMOVE all hardcoded or placeholder metrics.
+Correctness and data integrity are more important than UI changes.
+
+────────────────────────────────
+1. REAL & VERIFIED DATA INTEGRATION (CRITICAL)
+────────────────────────────────
+You MUST use a REAL and VERIFIED data source.
+
+Primary data source (must be implemented exactly):
+- Nasdaq Data Link (Quandl) EU ETS EUA historical prices
+- CSV URL:
+  https://data.nasdaq.com/api/v3/datasets/EEX/EUA.csv
+
+The `data_fetcher.py` module MUST:
+- Download data directly from the above URL
+- Load the CSV using pandas
+- Validate that the dataset contains rows
+- Log:
+  - Number of rows loaded
+  - Latest available date
+- Raise an explicit error if zero rows are returned
+- Save raw data to:
+  /data/raw/eua_prices.csv
+
+If (and only if) this source fails, optionally fall back to:
+- Official EEX CSV reports
+- Other publicly available EU ETS datasets
+
+DO NOT use placeholder data under any circumstance.
+
+────────────────────────────────
+2. DATA PREPROCESSING
+────────────────────────────────
+Create `preprocessing.py` that:
+- Loads `/data/raw/eua_prices.csv`
+- Converts the Date column to a datetime index
+- Sorts data chronologically
+- Handles missing values safely
+- Generates time-series features:
+  - Lag features
+  - Rolling mean / rolling standard deviation
+- Saves processed data to:
+  /data/processed/eua_processed.csv
+
+────────────────────────────────
+3. SARIMAX MODEL (NO PLACEHOLDERS)
+────────────────────────────────
+Fix or rewrite the SARIMAX implementation so that:
+- It trains ONLY on real processed EUA price data
+- Uses seasonal parameters (monthly seasonality)
+- Splits data into train / validation sets using time-aware splitting
+- Computes REAL evaluation metrics (RMSE)
+- Saves the trained model to:
+  /models/sarimax.pkl
+- Logs model training completion and diagnostics
+
+NO hardcoded accuracy or RMSE values are allowed.
+
+────────────────────────────────
+4. SYNC DATA BUTTON (BACKEND FIX)
+────────────────────────────────
+Fix the `/sync-data` endpoint so that clicking “Sync Data” performs the following sequence:
+
+1. Download real EU ETS EUA data
+2. Run preprocessing
+3. Retrain the SARIMAX model
+4. Update the last_sync timestamp
+5. Return REAL computed metrics
+
+The endpoint must return JSON like:
+{
+  "current_price": <latest real EUA price>,
+  "rmse": <real computed RMSE>,
+  "trend": "Bullish" | "Bearish" | "Neutral",
+  "last_sync": "<UTC timestamp>"
+}
+
+────────────────────────────────
+5. DASHBOARD API (REAL VALUES ONLY)
+────────────────────────────────
+Fix dashboard-related endpoints so they:
+- Load the trained SARIMAX model from disk
+- Pull the latest real price from processed data
+- Compute forecast trend from actual model predictions
+- NEVER return 0.00 unless data is genuinely unavailable
+
+If data is missing, return a clear error message instead of fake values.
+
+────────────────────────────────
+6. LOGGING & DEBUGGING (MANDATORY)
+────────────────────────────────
+Add logging statements for:
+- Number of rows loaded from CSV
+- Latest available EUA price and date
+- Model training success or failure
+- Sync operation success or failure
+
+This must work reliably on Replit free-tier infrastructure.
+
+────────────────────────────────
+7. PROJECT STRUCTURE (ENFORCE STRICTLY)
+────────────────────────────────
+/data
+  /raw
+  /processed
+/src
+  data_fetcher.py
+  preprocessing.py
+  train.py
+  predict.py
+/models
+app.py
+requirements.txt
+
+────────────────────────────────
+8. FINAL VALIDATION CHECK
+────────────────────────────────
+After the fix:
+- Current price must show a REAL € value (historically ~€70–€100)
+- “Latest Data” must show a valid last sync timestamp
+- Forecast chart must render real predictions
+- No mock or hardcoded values anywhere in the codebase
+
+Optimize for correctness, data integrity, and transparency over UI polish.

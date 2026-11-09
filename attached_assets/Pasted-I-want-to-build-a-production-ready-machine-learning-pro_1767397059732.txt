@@ -1,0 +1,150 @@
+I want to build a production-ready machine learning project in Python that predicts the German carbon market price using historical data from the European Union Emissions Trading System (EU ETS).
+
+This is a TIME SERIES forecasting problem. The primary and most suitable model should be **SARIMAX (Seasonal ARIMA with exogenous variables)** due to strong seasonality, temporal dependency, and interpretability. A secondary benchmark model (Random Forest or XGBoost) should be included for comparison. Deep learning models (LSTM/GRU) should be optional and clearly marked as advanced extensions, not the default.
+
+────────────────────────
+1. HISTORICAL DATA SOURCES (FREE)
+────────────────────────
+Use only free and reliable data sources. Prioritize:
+
+- **EU Emissions Trading System (EU ETS)** historical allowance prices (EUA)
+  - CSV / Excel files from EU or EEX official sources
+- **EEX (European Energy Exchange)** carbon index price data
+- **Quandl (Nasdaq Data Link)** free carbon datasets
+- **World Bank Climate & Energy datasets** (optional exogenous variables)
+- **Google BigQuery public datasets** (optional)
+
+Include Python scripts to:
+- Download data via API or direct CSV
+- Load CSV/Excel into pandas
+- Automatically refresh data when possible
+
+────────────────────────
+2. DATA PREPROCESSING & FEATURE ENGINEERING
+────────────────────────
+Implement robust preprocessing:
+- Handle missing values and outliers
+- Convert data to time-indexed format
+- Generate time features:
+  - year, month, quarter
+  - lag features (1, 7, 30 days)
+  - rolling mean & rolling std
+- Optional exogenous variables:
+  - energy prices
+  - inflation or economic index (if available)
+- Train / validation / test split using time-aware splitting
+
+────────────────────────
+3. EXPLORATORY DATA ANALYSIS (EDA)
+────────────────────────
+Create visualizations:
+- Historical carbon price trends
+- Seasonality plots (monthly / yearly)
+- Correlation heatmaps
+- Rolling statistics
+
+Use:
+- matplotlib
+- seaborn
+
+────────────────────────
+4. MODELING (MOST IMPORTANT)
+────────────────────────
+Implement models in this order:
+
+A. **Baseline**
+- Naive forecast (last known value)
+
+B. **Primary Model – SARIMAX**
+- Seasonal parameters
+- Support exogenous variables
+- Automatic parameter selection (AIC/BIC)
+- Well-commented implementation
+
+C. **Secondary Model – Random Forest or XGBoost**
+- Feature-based regression
+- Lag-based input features
+- Hyperparameter tuning
+
+D. **Optional Advanced Model (Extension)**
+- LSTM / GRU
+- Clearly labeled as optional due to compute cost
+
+Select the best model based on validation RMSE.
+
+────────────────────────
+5. MODEL EVALUATION
+────────────────────────
+Evaluate using:
+- RMSE
+- MAE
+- R²
+- Prediction vs actual plots
+- Residual analysis
+
+────────────────────────
+6. MODEL SAVING & VERSIONING
+────────────────────────
+- Save trained models to `/models`
+- Store metadata (training date, metrics)
+- Ability to retrain model easily
+
+────────────────────────
+7. DEPLOYMENT (REPLIT-FRIENDLY)
+────────────────────────
+Create a backend API using **FastAPI or Flask** that:
+- Loads the trained model
+- Accepts date input
+- Returns predicted carbon price
+- Handles errors gracefully
+
+Replit will host the API and provide a public URL.
+Account for free-tier limitations (app sleep on inactivity).
+
+────────────────────────
+8. OPTIONAL FRONTEND
+────────────────────────
+- Simple HTML + CSS + JS page
+- User enters a future date
+- Displays predicted carbon price and confidence range
+
+────────────────────────
+9. PROJECT STRUCTURE
+────────────────────────
+/data
+  /raw
+  /processed
+/notebooks
+/src
+  preprocessing.py
+  train.py
+  evaluate.py
+  predict.py
+/models
+app.py
+requirements.txt
+README.md
+
+────────────────────────
+10. DEPENDENCIES
+────────────────────────
+- pandas, numpy
+- scikit-learn
+- statsmodels
+- matplotlib, seaborn
+- fastapi or flask
+- requests
+- joblib
+
+────────────────────────
+11. DOCUMENTATION
+────────────────────────
+Generate a clear README with:
+- Project overview
+- Data sources
+- Model explanation (why SARIMAX)
+- How to run locally and on Replit
+- How to retrain the model
+- API usage instructions
+
+Ensure the code is modular, well-commented, and optimized for Replit’s free-tier environment.
